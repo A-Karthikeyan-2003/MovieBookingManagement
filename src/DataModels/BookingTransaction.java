@@ -2,7 +2,7 @@ package DataModels;
 
 import java.util.ArrayList;
 
-import Management.Status;
+import Helper.Status;
 
 public class BookingTransaction {
 

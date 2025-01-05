@@ -1,5 +1,7 @@
 package AccessService;
 
+import java.util.ArrayList;
+
 import DataModels.City;
 
 public interface TheatreOwnerAccess {
@@ -19,5 +21,7 @@ public interface TheatreOwnerAccess {
 	public City getCity(int cityId);
 	
 	public void viewAllBookingTickets( String Date, int showId );
+
+	public void makeSubscriptionSeats(int showId, String date, ArrayList<String> seatsDetails);
 	
 }

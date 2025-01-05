@@ -1,13 +1,14 @@
 import java.util.Scanner;
 
+
 import AccessService.CommonAccess;
 import BookingManagement.BookingManagementSystem;
-import BookingManagement.DashBoards;
 import BookingManagement.Navigate;
 import DataModels.City;
 import DataModels.Roles;
 import DataModels.TheatreOwner;
 import DataModels.User;
+import UserInterface.DashBoards;
 
 public class Start {
 
@@ -96,8 +97,7 @@ public class Start {
 		
 		
 		user = commonAccess.isExistInAccount(email,password); //bookingManagementSystem.login(email,password);
-		
-		
+	
 		
 		dashBoards = Navigate.navigation( (BookingManagementSystem) commonAccess , user );
 		
@@ -126,7 +126,7 @@ public class Start {
 	}
 
 	
-	//=============================================================
+	//==============================================================================================
 	
 	
 	
@@ -138,8 +138,6 @@ public class Start {
 		
 		Scanner ob = new Scanner(System.in);
 		
-		
-	
 		
 		while(true) {
 		

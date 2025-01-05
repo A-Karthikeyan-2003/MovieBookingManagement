@@ -1,4 +1,4 @@
-package Management;
+package Helper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -188,12 +188,20 @@ public static void viewAllBookingTickets(ArrayList<BookingTransaction>  bookingT
 		
 		System.out.println("\nBooking Details For show ID : " + showId + " in " + date + " Date\n");
 		
-		System.out.println("\nMovie Date: " + bookingTransaction.getMovieDate() + "\nScreen Name : " + screen.getName() + "\nShow Name : " + show.getName() + "\nShow Time : " + show.getTimeStart() + "\nThatre Name : "  + theatre.getName() + "\nMovie Date : " + bookingTransaction.getMovieDate() );
+		System.out.println("\nMovie Date: " + bookingTransaction.getMovieDate() + "\nScreen Name : " + screen.getName() + "\nShow Name : " + show.getName() + "\nShow Time : " + show.getTimeStart() + "\nThatre Name : "  + theatre.getName()  );
 		
 		if( bookingTransaction.getMovieDate().equals(date) && bookingTransaction.getShowId() == showId )
 		{
 			System.out.println("\nBookinTicketId : " + bookingTransaction.getId() + "\nNo of Seat Booked : " + bookingTransaction.getNoOfBookedSeat()  + "\nTotal Rate : " + bookingTransaction.getTotalRate() + "\nUserId : " + bookingTransaction.getUserId() + "\nBooking Date : " + bookingTransaction.getBookingTimeAndDate() +  "\nStatus : " + bookingTransaction.getStatus() );
 			
+			ArrayList<String> seatsForThisUserInThisDate = bookingTransaction.getSeatsDetails();
+			System.out.print( "SEAT DETAILS : " );
+			for(int j=0; j<seatsForThisUserInThisDate.size(); j++)
+			{
+				System.out.print( seatsForThisUserInThisDate.get(j) + ( ( j!= seatsForThisUserInThisDate.size()-1 ) ? " , " : " " ) );
+			}
+			
+			System.out.println();
 			
 		}
 		
@@ -238,11 +246,20 @@ public static void historyView( ArrayList<BookingTransaction>  bookingTransactio
 		
 		System.out.println("\n---------------------------------------------------------------\n");
 		
-		System.out.println("\nMovie Date: " + bookingTransaction.getMovieDate() + "\nScreen Name : " + screen.getName() + "\nShow Name : " + show.getName() + "\nShow Time : " + show.getTimeStart() + "\nTheatre Name : "  + theatre.getName() + "\nMovie Date : " + bookingTransaction.getMovieDate() );
+		System.out.println("\nMovie Date: " + bookingTransaction.getMovieDate() + "\nScreen Name : " + screen.getName() + "\nShow Name : " + show.getName() + "\nShow Time : " + show.getTimeStart() + "\nTheatre Name : "  + theatre.getName() );
 		
 		if( bookingTransaction.getUserId() == userId && ( bookingTransaction.getStatus() == Status.Booked || bookingTransaction.getStatus() == Status.Cancelled ) );
 		{
 			System.out.println("\nBookinTicketId : " + bookingTransaction.getId() + "\nNo of Seat Booked : " + bookingTransaction.getNoOfBookedSeat()  + "\nTotal Rate : " + bookingTransaction.getTotalRate() + "\nUserId : " + bookingTransaction.getUserId() + "\nBooking Date : " + bookingTransaction.getBookingTimeAndDate() +  "\nStatus : " + bookingTransaction.getStatus() );
+			
+			ArrayList<String> seatsForThisUserInThisDate = bookingTransaction.getSeatsDetails();
+			System.out.print( "SEAT DETAILS : " );
+			for(int j=0; j<seatsForThisUserInThisDate.size(); j++)
+			{
+				System.out.print( seatsForThisUserInThisDate.get(j) + ( ( j!= seatsForThisUserInThisDate.size()-1 ) ? " , " : " " ) );
+			}
+			
+			System.out.println();
 			
 			
 		}

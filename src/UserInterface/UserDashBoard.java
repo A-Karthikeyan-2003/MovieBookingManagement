@@ -1,4 +1,4 @@
-package BookingManagement;
+package UserInterface;
 
 import java.util.ArrayList;
 import java.util.Scanner;

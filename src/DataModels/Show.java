@@ -1,6 +1,7 @@
 package DataModels;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Show implements Cloneable {
 
@@ -13,9 +14,18 @@ public class Show implements Cloneable {
 	
 	private int movieId;
 	
-	 private boolean[][] seats;
+
 	
-	// private ArrayList<ArrayList<Boolean>> seats;
+	 private int[][] seats;
+	
+	
+	 
+	 public Show(Show show)
+	 {
+		 
+		this( show.id, show.name , show.timeStart, show.movieId, show.screenId , show.theatreId, show.noOfSeat, show.rate );
+	 }
+	 
 
 	public Show(int id, String name, String timeStart, int movieId, int screenId, int theatreId, int noOfSeat, int rate) {
 		
@@ -30,53 +40,32 @@ public class Show implements Cloneable {
 		
 		this.rate = rate;
 		
-//		this.seats = new ArrayList<ArrayList<Boolean>>();
-//		
-//		for(int i=0; i<5; i++)
-//		{
-//			ArrayList<Boolean> seat = new ArrayList<Boolean>();
-//			
-//			for(int j=0; j<5; j++)
-//			{
-//				seat.add(false);
-//			}
-//			
-//			this.seats.add(seat);
-//		}
+
 		
-		this.seats = new boolean[5][5];
+
+		
+		
+		 this.seats = new int[5][5];
 	}
 	
 	
 	
-	
 
-	public boolean[][] getSeats() {
+
+
+
+	public int[][] getSeats() {
 		return seats;
 	}
 
 
 
 
-	public void setSeats(boolean[][] seats) {
+
+	public void setSeats(int[][] seats) {
 		this.seats = seats;
 	}
 
-
-
-//
-//	public ArrayList<ArrayList<Boolean>> getSeats() {
-//		return seats;
-//	}
-
-
-
-
-
-//	public void setSeats(ArrayList<ArrayList<Boolean>> seats) {
-//		this.seats = seats;
-//	}
-//
 
 
 
@@ -160,9 +149,17 @@ public class Show implements Cloneable {
 	
 	
 	
+
+
+
+
+
 	public Object clone() throws CloneNotSupportedException {
 		
-		return super.clone();
+		Show show = (Show) super.clone();
+		
+		
+		return show;
 	}
 
 	

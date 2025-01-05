@@ -1,4 +1,4 @@
-package BookingManagement;
+package UserInterface;
 
 public interface DashBoards {
 

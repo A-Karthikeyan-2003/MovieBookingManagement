@@ -1,5 +1,6 @@
-package BookingManagement;
+package UserInterface;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import AccessService.TheatreOwnerAccess;
@@ -162,6 +163,36 @@ public class TheatrOwnerDashBoard implements DashBoards {
 		theatreOwnerAccess.viewAllBookingTickets( date, showId);
 		
 	}
+	
+	
+private void makeSubscriptionSeats() {
+	
+	
+	System.out.println("Enter show Id to make subscription seats : ");
+	int showId = ob.nextInt();
+	
+	System.out.println("Enter Date to make subscription seats : ");
+	String date = ob.next();
+	
+	System.out.println("How many seat you want to book : ");
+	int noOfSeatForThisShow = ob.nextInt();
+	
+	ArrayList<String> seatsDetails = new ArrayList<String>();
+	
+	for(int i=0; i<noOfSeatForThisShow; i++)
+	{
+		System.out.println("Enter "+ (i+1) + "'s Seat : ");
+	
+		seatsDetails.add( ob.next() );
+		
+	}
+	
+	theatreOwnerAccess.makeSubscriptionSeats(showId,date, seatsDetails);
+	
+	
+		
+	}
+
 
 	
 	
@@ -170,7 +201,7 @@ public class TheatrOwnerDashBoard implements DashBoards {
 		
 		Scanner ob = new Scanner(System.in);
 		
-		System.out.println("Enter choice : \n1.Add Theatre\n2.Add Screen\n3.Add ShowDetails\n4.Release Movie\n5.View All Booking Tickets in Our Theatre\n6.Logout\n");
+		System.out.println("Enter choice : \n1.Add Theatre\n2.Add Screen\n3.Add ShowDetails\n4.Release Movie\n5.View All Booking Tickets in Our Theatre\n6.Choose Seats For Subscription Theate\n7.Logout\n");
 		
 		int choice = ob.nextInt();
 		
@@ -206,8 +237,11 @@ public class TheatrOwnerDashBoard implements DashBoards {
 			this.viewAllBookingTickets();
 			
 			break;
-			
 		case 6:
+			
+			this.makeSubscriptionSeats();
+			
+		case 7:
 			
 			return 0;
 		
@@ -217,6 +251,7 @@ public class TheatrOwnerDashBoard implements DashBoards {
 		return 1;
 	}
 
+	
 
 
 }

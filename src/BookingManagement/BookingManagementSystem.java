@@ -3,6 +3,7 @@ package BookingManagement;
 import java.time.LocalDate;
 
 
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,14 +21,13 @@ import DataModels.Show;
 import DataModels.Theatre;
 import DataModels.TheatreOwner;
 import DataModels.User;
-
-import Management.MovieManagement;
-import Management.ScreenManagement;
-import Management.SearchManagement;
-import Management.ShowAndDateManagement;
-import Management.ShowManagement;
-import Management.Status;
-import Management.TheatreManagement;
+import Helper.MovieManagement;
+import Helper.ScreenManagement;
+import Helper.SearchManagement;
+import Helper.ShowAndDateManagement;
+import Helper.ShowManagement;
+import Helper.Status;
+import Helper.TheatreManagement;
 
 public class BookingManagementSystem implements UserAccessService, TheatreOwnerAccess, CommonAccess {
 
@@ -36,14 +36,8 @@ public class BookingManagementSystem implements UserAccessService, TheatreOwnerA
 	
 	private static int userId=0,theatreOwnerId=0, theatreId=0, screenId=0, showId=0, movieId=0, cityId=0, bookingTransactionId=0;
 	
-//	private ArrayList<Movie> movieList = new ArrayList<Movie>();
-	
 	private ArrayList<Theatre> theatreList = new ArrayList<Theatre>();
-//	
-//	private ArrayList<Screen> screenList = new ArrayList<Screen>();
-//	
-//	private ArrayList<Show> showList = new ArrayList<Show>();
-//	
+	
 	private ArrayList<User> userList = new ArrayList<User>();
 	
 	private ArrayList<BookingTransaction> bookingTransactionList = new ArrayList<BookingTransaction>();
@@ -609,6 +603,15 @@ public void addToTheatreOwner(String username,String  email,String password, Str
 		City city = SearchManagement.getCity(cityList, cityId);
 		
 		return city;
+	}
+
+
+
+	
+	public void makeSubscriptionSeats(int showId, String date,  ArrayList<String> seatsDetails) {
+		
+		//ShowAndDateManagement.makeSubscriptionSeats(hashmap,date,showId,  seatsDetails);
+		
 	}
 	
 	

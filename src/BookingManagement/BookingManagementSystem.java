@@ -1,160 +1,208 @@
 package BookingManagement;
 
+
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
-
-
-
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Scanner;
-
-import AccessService.CommonAccess;
+import AccessService.MainAdminAccess;
+import AccessService.NormalAccess;
 import AccessService.TheatreOwnerAccess;
 import AccessService.UserAccessService;
-import DataModels.BookingTransaction;
-import DataModels.City;
-import DataModels.Movie;
 import DataModels.Roles;
-import DataModels.Screen;
-import DataModels.Show;
-import DataModels.Theatre;
 import DataModels.TheatreOwner;
 import DataModels.User;
-import Helper.MovieManagement;
-import Helper.ScreenManagement;
-import Helper.SearchManagement;
-import Helper.ShowAndDateManagement;
-import Helper.ShowManagement;
-import Helper.Status;
-import Helper.TheatreManagement;
+import Manager.BookingTransactionManager;
+import Manager.CityManager;
 
-public class BookingManagementSystem implements UserAccessService, TheatreOwnerAccess, CommonAccess {
+import Manager.MovieManager;
+import Manager.ScreenManager;
+import Manager.ShowManager;
+import Manager.TheatreAdminManager;
+import Manager.TheatreManager;
+import Manager.UserManager;
 
-	
 
-	
-	private static int userId=0,theatreOwnerId=0, theatreId=0, screenId=0, showId=0, movieId=0, cityId=0, bookingTransactionId=0;
-	
-	private ArrayList<Theatre> theatreList = new ArrayList<Theatre>();
-	
-	private ArrayList<User> userList = new ArrayList<User>();
-	
-	private ArrayList<BookingTransaction> bookingTransactionList = new ArrayList<BookingTransaction>();
-	
-	private ArrayList<TheatreOwner> theatreOwnerList = new ArrayList<TheatreOwner>();
-	
-	private ArrayList<City> cityList = new ArrayList<City>();
-	
-	private HashMap<String,ArrayList<Show>> hashmap = new HashMap<String,ArrayList<Show>>();
-	
-	
+
+public class BookingManagementSystem implements UserAccessService, TheatreOwnerAccess, NormalAccess, MainAdminAccess {
 
 	
-	public BookingManagementSystem(){
-		
-		
+
+    
+    TheatreManager theatreManager = null;
+   
+    BookingTransactionManager bookingTransactionManager = null;
+    
+    ShowManager showManager = null;
+    
+    UserManager userManager = null;
+    
+    CityManager enumManager = null;
+    
+    ScreenManager screenManager = null;
+    
+    TheatreAdminManager theatreAdminManager = null;
+    
+    Connection conn = null;
+    
+    MovieManager movieManager = null;	
+	
+	private HashMap<Integer,String> languageMap = null;
+	
+	private HashMap<Integer,String> categoryMap = null;
+	
+	public BookingManagementSystem() 
+	{
 	
 		
-		Movie movie1 = new Movie(movieId++, "Bagubali", "Action", "Pan India Movie", "Tamil", "U", " 2 hour 30 min");
-		Movie movie2 = new Movie(movieId++, "Bagubali - 2", "Action", "Pan India Movie", "Tamil", "U", " 2 hour 45 min");
-		Movie movie3 = new Movie(movieId++, "GOAT", "Action", "Pan India Movie", "Tamil", "U", " 2 hour 30 min");
-		Movie movie4 = new Movie(movieId++, "VidaMuyarchi", "Action Thriller", "Pan India Movie", "Tamil", "U", " 2 hour 35 min");
+		DBConnection  app = DBConnection.getInstance();
+		   
+		 conn = app.connect();
 
-		MovieManagement.movieList.add(movie1); 
-		MovieManagement.movieList.add(movie2); 
-		MovieManagement.movieList.add(movie3); 
-		MovieManagement.movieList.add(movie4);
+	   userManager = new UserManager(conn);	
+	  
+	   theatreAdminManager  = new TheatreAdminManager(conn);	
+	  
+	   enumManager = new CityManager( conn);
+	   
+	   theatreManager = new TheatreManager( conn );
+	   
+	   screenManager = new ScreenManager(conn);
+	   
+	   movieManager = new MovieManager(conn);
+	   
+	   showManager = new ShowManager(conn);
+	   
+	   bookingTransactionManager = new BookingTransactionManager(conn);
+	   
+	   languageMap = new HashMap<Integer,String>();
 		
-		City city1 = new City(cityId++, "Sivakasi", "626121", "Virudhunagar");
-		City city2 = new City(cityId++, "Srivilliputtur", "626125", "Virudhunagar");
-		City city3 = new City(cityId++, "Rajapalayam", "626122", "Virudhunagar");
-		City city4 = new City(cityId++, "Aruppukottai", "626123", "Virudhunagar");
-		
-		cityList.add(city1);
-		cityList.add(city2);
-		cityList.add(city3);
-		cityList.add(city4);
-		
-		
-		
+	   categoryMap = new HashMap<Integer,String>();
 	}
 	
 
+public int addToUser( String username, String email, String password, long contact, String dateOfBirth,int choiceForUserType ) throws SQLException {
 	
-public void addToUser( String username, String email, String password, String contact, String dateOfBirth ) {
 
-
-	User user = new User( username,email,password,contact,dateOfBirth , userId  );
-	
-	userList.add(user);
-	
+	int res = userManager.addUser( username,  email,  password,  contact,  dateOfBirth, choiceForUserType);
+	return res;
 }
 
-public void addToTheatreOwner(String username,String  email,String password, String contact,String documentProofId, String dateOfBirth ,int cityId )
+
+
+public int addToTheatreOwner(String username,String  email,String password, long contact,String documentProofId, String dateOfBirth, int choiceForUserType) throws SQLException
 {
 	
-	TheatreOwner theatreOwner = new TheatreOwner( username, email, password, contact, documentProofId, theatreOwnerId, dateOfBirth , cityId   );
+	int res = theatreAdminManager.addTheatreAdmin( username,  email,  password,  contact, documentProofId,  dateOfBirth, choiceForUserType);
+	return res;
 	
-	theatreOwnerList.add(theatreOwner);
 }
 
-	public Roles isExistInAccount(String email, String password) {
+	public Roles isExistInAccount(String email, String password) throws SQLException {
 		
-		Roles user = null;
+		Roles res = null; 
 		
-		for(int i=0; i<userList.size(); i++)
-		{
-			User userr = userList.get(i);
-			
-			if( userr.getEmail().equals(email) && userr.getPassword().equals(password) )
-			{
-				
-				user = userr;
-				break;
-			}
-		}
+	
+		res = theatreAdminManager.isExistTheatreAdmin(email,  password);
+		if( res != null ) { return res; }
 		
-		if( user == null )
-		{
-			for(int i=0; i<theatreOwnerList.size(); i++)
-			{
-				TheatreOwner theatreOwner = theatreOwnerList.get(i);
-				
-				if( theatreOwner.getEmail().equals(email) && theatreOwner.getPassword().equals(password) )
-				{
-					
-					user = theatreOwner;
-					break;
-				}
-			}
-		}
 		
-
 		
-		return user;
+		res = userManager.isExistUser(email,  password);
+		if( res != null ) { return res; }
+		
+	
+		return  res;
+	
 
 	}
 
 
+	//===========================  VALIDATION TASKS ============================		
+	
+	
+//	boolean isExistTheatre( int theatreId )
+//	{
+//		boolean valid = false;
+//		for(int i=0; i<theatreList.size(); i++)
+//		{
+//			//if(  )
+//		}
+//	}
+	
 	
 	// ===========================  THEATRE OWNER TASKS ==================================
 	
+
 	
-	public  void viewCity() {
+	public void setCategory() throws SQLException 
+	{
+
+		categoryMap =	enumManager.setCategory(categoryMap);
+
+	}
+	
+	
+	public void setLanguage() throws SQLException 
+	{
+
+		languageMap =	enumManager.setLanguage(languageMap);
+
+	}
+	
+	public void viewLanguage() throws SQLException  {
 		
-		for(int i=0; i<cityList.size(); i++)
-		{
-			System.out.println("-----------------------------\n");
-			
-			System.out.println("City Name : "  + cityList.get(i).getCityName() );
-			
-			System.out.println("City Id : "  + cityList.get(i).getCityId() );
+		setLanguage();
 		
-			System.out.println("\n-----------------------------");
-			
-		}
+		 enumManager.setLanguage(languageMap);
+		if( !enumManager.getLanguage(languageMap) ) { return;  }
 		
+
+	}
+	
+	public void viewCategory() throws SQLException  {
+		
+		setCategory();
+		
+		 enumManager.setCategory(categoryMap);
+		if( !enumManager.getCategory(categoryMap) ) { return;  }
+		
+
+	}
+	
+	
+	public void viewCity() throws SQLException  {
+//		
+//		setCity();
+//		
+//		 enumManager.setCity(cityMap);
+		
+	ResultSet res =	enumManager.getCity();
+	
+	System.out.println("\n==========================\n");
+	System.out.println("\nALL CITY LIST\n");
+	System.out.println("\n==========================\n");
+	int c=0;
+	while(res.next()) {
+	c++;
+	System.out.println("\nCity Id : " + res.getInt("id")+"\nCity Name : " + res.getString("name") + "\nCity District : " + res.getString("district") + "\nCity Zipcode : " + res.getLong("zipcode") );
+		
+
+	
+	}
+	
+	if( c==0 ) { System.out.println("City Not Found"); }
+	
+	System.out.println("\n==========================\n");
+	
 	}
 	
 	//===================================================================
@@ -167,18 +215,19 @@ public void addToTheatreOwner(String username,String  email,String password, Str
 	
 	
 	
-	public void addTheatre(String theatreName,  int cityId , String owner) {
+	public void addTheatre( String theatreName,  int cityId , int ownerId ) throws SQLException {
 		
-		Theatre theatre = new Theatre( theatreId++, theatreName, cityId, owner  );
+		 String name = enumManager.getCityNameById(cityId);
+	
 		
-		this.theatreList = TheatreManagement.addTheatre(theatreList, theatre);
+		int res = theatreManager.addTheatre( theatreName, ownerId, cityId );	
 		
-		City city = SearchManagement.getCity(cityList, cityId);
-		
-		city.setTheatre(theatre);
-		
-		System.out.println( theatreName + " theatre was Added Successfully in  the " + city.getCityName() + " city ");
-		
+		if(res != 0 ) {
+		System.out.println( theatreName + " theatre was Added Successfully in  the " + name + " city ");
+		}
+		else {
+			System.out.println("Theatre Added Failed");
+		}
 		
 	}
 
@@ -188,86 +237,40 @@ public void addToTheatreOwner(String username,String  email,String password, Str
 	
 	
 	
-	public void addScreens(int theatreId, String screenName) {
+	public void addScreens(int theatreId, String screenName, int row, int col) throws SQLException {
 
-		
-		Theatre theatre = TheatreManagement.getTheatre(theatreList, theatreId);
-		
-		if( theatre != null ) {
-		
-		Screen screen = new Screen(screenId++, screenName , theatre.getId() );
-		
-		ArrayList<Screen> screenListForThisTheatre  = theatre.getScreenList();
-		
-		theatre.setScreenList(ScreenManagement.addScreen(screenListForThisTheatre, screen));
-
-		
-		System.out.println(  screenName + " screen was added successfully in the " + theatre.getName() + " theatre" );
-		
-		}
-		else {
-			
-			System.out.println("Theatre Not Found to add Screen");
-			
-		}
+	
+		int res = screenManager.addScreen(theatreId,screenName,row , col );
 		
 		
+		if(res != 0 ) {
+			System.out.println( screenName + " screen was Added Successfully");
+			}
+			else {
+				System.out.println("Screen Added Failed");
+			}
+	
 	}
 
 //====================================================================================================================================================
 	
-	public void addShows(int theatreId, int screenId, String showName, String timeStart, int movieId, String datesForShow, int noOfSeats, int rate)  {
+	public void addShows(int theatreId, int screenId, String showName, String timeStart, int movieId, String datesForShow, int rate) throws SQLException  {
 		
-		Theatre theatre = TheatreManagement.getTheatre(theatreList, theatreId);
+		String rowCol = screenManager.getRowColById(screenId);
 		
-		if( theatre != null ) {
-			
-			ArrayList<Screen> screenListForThisTheatre  = theatre.getScreenList();
-			
-			Screen screen = ScreenManagement.getScreen(screenListForThisTheatre, screenId) ;
-			
-			if( screen != null )
-			{
-				
-				Movie movie = MovieManagement.getMovie( movieId);
-
-				if( movie!=null ) {
-				
-				Show show = new Show(showId++,showName, timeStart , movieId ,screenId, theatreId , noOfSeats , rate );
-				
-				try {
-					this.hashmap = ShowAndDateManagement.addDateAndShow(hashmap, datesForShow, show);
-				} catch (CloneNotSupportedException e) {
-					
-					e.printStackTrace();
-				}
-				
-				ArrayList<Show> showListForThisScreen = new ArrayList<Show>();
-			
-				
-				screen.setShowList(ShowManagement.addShow(showListForThisScreen, show)); 
-				
-				// this.showList = ShowManagement.addShow(showList, show) ;
-				
-				System.out.println( show.getName() +  " show Details added successfully to release the " + movie.getName() + " movie" );
-				
-				}
-				else {
-					System.out.println("Movie not found..");
-				}
-				
-				
+		if( rowCol == null ) { System.out.println("Row Col is empty..Pls Try Again.."); return; }
+		
+		int res = showManager.addShows( theatreId,  screenId,  showName,  timeStart,  movieId,  datesForShow,  rate , rowCol );
+		
+		
+		if(res != 0 ) {
+			System.out.println( showName + " show was Added Successfully");
 			}
 			else {
-				System.out.println("Screen Not Found for this Theatre Id : "  + theatreId );
-			}	
-			
-		}
-		else {
-			
-			System.out.println("Theatre Not Found to add Show");
-		}
+				System.out.println("Show Added Failed");
+			}
 		
+
 		
 	}
 
@@ -276,125 +279,142 @@ public void addToTheatreOwner(String username,String  email,String password, Str
 	
 	
 	
-	public void viewMovies() {
+	public void viewMovies() throws SQLException {
 		
-		for(int i=0; i<MovieManagement.movieList.size(); i++)
-		{
-			Movie movie = MovieManagement.movieList.get(i);
-			
-			System.out.println("\n ----------------------------- \n");
-			
-			System.out.println("Movie Id : " + movie.getId()+"\nMovie Name : " + movie.getName() +  "\nMovie Duration : " + movie.getDuration() + "\nMovie Description : " + movie.getDescription() + "\nMovie Type : " + movie.getType()  + "\nMovie Sensor Type : " + movie.getSensorType());
-			
-			System.out.println("\n ----------------------------- \n");
-			
-			
-		}
+		
+
+		int res = movieManager.viewMovies();
+		
+		
+		if( res == 0 ) {
+			System.out.println("No Movie Shown Here..");
+			}
+		
 		
 	}
 
 	
-	//==================================================================================================================================
-	
-	
-	public void releaseMovies(int theatreId, int screenId, int showId, int movieId  , String datesForShow, int rate, int seat) {
+	public void viewAllMovieInTheatre(int theatreId) throws SQLException {
 		
+		ResultSet rs = showManager.getShowByTheatreId(theatreId);
+		
+		String theatreName =  theatreManager.getTheatreNameById(theatreId);
+		
+		System.out.println("\n============================\n");
+		System.out.println("\nTheatre Name : " + theatreName );
+		
+		System.out.println("\n============================\n");
 
-		Theatre theatre = TheatreManagement.getTheatre(theatreList, theatreId);
-		
-		if( theatre != null ) {
-			
-			ArrayList<Screen> screenListForThisTheatre  = theatre.getScreenList();
-			
-			Screen screen = ScreenManagement.getScreen(screenListForThisTheatre, screenId) ;
-			
-			if( screen != null )
-			{
-				Movie movie = MovieManagement.getMovie( movieId);
-				
-				if( movie!=null ) {
+		int c=0;
+		while(rs.next())
+		{ c++;
+					int screenId = rs.getInt("screen_id");
 					
-					ArrayList<Show> showListForThisScreen = screen.getShowList();
+					String screen_name = screenManager.getScreenNameById(screenId);
 					
-					Show show = ShowManagement.getShow(showListForThisScreen, showId) ;
-				
-					if( show != null )
-					{
-				
-					//==================================================
+					System.out.println("\nScreen Name : " + screen_name + "\n" );
+					
+					int movieId = rs.getInt("movie_id");
+			
+					String movieName = movieManager.getMovieNameById(movieId);
+					
+					System.out.println("\nMovie Name : " + movieName  + "\n" );
+					
+					System.out.println("\nShow date : " + rs.getDate("show_date"));
+					
+					System.out.println("\nTotal Tickets : " + rs.getInt("total_ticket"));
+					
+					System.out.println("\nAmount : " +  rs.getInt("rate"));
+					
+					Object[][] seat = showManager.getSeatById( rs.getInt("id") );
+					
+					System.out.println("\nSeat Deatils : \n");
+					
+					for(int j=0; j<seat.length; j++)
+					{ 
+						System.out.print( "\t" + (j+1));
 						
-							show.setRate(rate);
-						
-							show.setNoOfSeat(seat);
-						
-							show.setMovieId(movieId);
-						
-					//==================================================
-						
-						try {
+					}
+					System.out.println("\n");
+					for(int i=0; i<seat.length; i++)
+					{ 
+					
+					
+						for(int j=0; j<seat[i].length; j++)
+						{
 							
-							this.hashmap = ShowAndDateManagement.addDateAndShow(hashmap, datesForShow, show);
-					
-						} catch (CloneNotSupportedException e) {
 							
-							e.printStackTrace();
+							if(j==0) {
+								int v = 65+i;
+								System.out.print( (char) v +"\t");
+							}
+							String seatN = "";
+							
+							
+							
+							char rr = (char) ( i + 65) ;
+							
+							seatN += String.valueOf(rr);
+							seatN += "-";
+							seatN += String.valueOf( (j+1) );
+							
+							System.out.print( ( ( ( (boolean) seat[i][j] == true ) ? "\u001B[41m " + seatN + "\t" + "\u001B[0m" : seatN  ) + "\t"  ) );
+							
 						}
+						
+						System.out.println();
+					}
 					
-						System.out.println("Show Details updated successfully...\nNew Movie : " + movie.getName() + " was released successfully..\n");
-					}
-				
-					else {
-						System.out.println("Show not found");
-					}
-				
-				}
-				else {
-					System.out.println("Movie not found");
-				}
-								
-				
-			}
-			else {
-				System.out.println("Screen Not Found for this Theatre Id : "  + theatreId );
-			}
+					System.out.println("\n\n");
 			
-			
-			
-		}
-		else {
-			
-			System.out.println("Theatre Not Found to add Show");
+					System.out.println("\n============================\n");
 		}
 		
+		if( c==0 ) { System.out.println("Not Found"); }
 		
+		System.out.println("\n============================\n");
+		
+	
+	
 	}
 	
 	
+	public boolean existCategoryId(int id)
+	{
+		return categoryMap.containsKey(id);
+	}
 	
-	
-	//=====================================================================================
-
-	
-	public void viewAllMovieInTheatre(int theatreId) {
-		
-		Theatre theatre = TheatreManagement.getTheatre(theatreList, theatreId);
-		SearchManagement.viewAllMovieInTheatre(theatre);
-	
+	public boolean existLanguageId(int id)
+	{
+		return languageMap.containsKey(id);
 	}
 	
 	//====================================================================================
 	
 	
-	public void viewAllTheatreForMovie(int movieId) { 
+	public void viewAllTheatreForMovie(int movieId) throws SQLException { 
 		
-	Movie movie = MovieManagement.getMovie(movieId);
-	
-		if( movie != null ) { 
-		SearchManagement.viewAllTheatreForMovie( movie, theatreList );
+		
+		ResultSet rs = showManager.getTheatreIdByMovieId(movieId);
+		System.out.println("\n============================\n");
+		System.out.println("\nTheatre Name List For This Movie ");
+		
+		System.out.println("\n============================\n");
+		int c=0;
+		while(rs.next())
+		{
+			c++;
+			
+			String theatreName =  theatreManager.getTheatreNameById(rs.getInt("theatre_id"));
+			
+			System.out.println(theatreName);
 		}
-		else {
-			System.out.println("Movie Not Found");
-		}
+		
+		if( c==0 ) { System.out.println("Not Found"); return; }
+		
+		System.out.println("\n============================\n");
+		
+
 		
 	}
 	
@@ -402,20 +422,27 @@ public void addToTheatreOwner(String username,String  email,String password, Str
 	//===========================================================================
 	
 	
-	public void viewAllTheatreForCity(int cityId) { 
+	public void viewAllTheatreForCity(int cityId) throws SQLException { 
 		
-	City city =	SearchManagement.getCity(cityList, cityId);
+		String cityName = enumManager.getCityNameById(cityId);
+		ResultSet rs = theatreManager.getIdByCity( cityId );
 		
+		System.out.println("\n============================\n");
+		System.out.println("\n All Theatre List For This City ");
+		
+		System.out.println("\n============================\n");
+		
+		int c=0;
+		while( rs.next() )
+		{ c++;
+			int idd =  rs.getInt("id"); 
+			viewAllMovieInTheatre(idd);
+		}
+		
+		if( c==0 ) { System.out.println("Not Found"); }
+		
+		System.out.println("\n============================\n");
 
-		
-		if( city != null ) {
-			
-		SearchManagement.viewAllTheatreForCity( theatreList , cityId );
-		
-		}
-		else {
-			System.out.println("City Not Found");
-		}
 		
 	}
 
@@ -423,207 +450,364 @@ public void addToTheatreOwner(String username,String  email,String password, Str
 	//=====================================================================================
 	
 	
-	public void bookTicket(int theatreId, String dateForMovie, int screenId , int showId, int noOfSeatForThisShow ,int userId, ArrayList<String> seatsDetails) {
+	public void bookTicket(int theatreId, String dateForMovie, int screenId , int showId, int noOfSeatForThisShow ,int userId, ArrayList<String> seatsDetails) throws SQLException {
 		
-		Theatre theatre = TheatreManagement.getTheatre(theatreList, theatreId);
-		
-		if( theatre != null ) {
+			int totalRate = showManager.getShowRateById(showId);
 			
-		ArrayList<Screen> screenListForThisTheatre =	theatre.getScreenList();
-		
-		Screen screen = ScreenManagement.getScreen(screenListForThisTheatre, screenId);
-		
-		if( screen != null ) {
+			boolean isValidForBooking = showManager.isValidBooking(showId, noOfSeatForThisShow , seatsDetails );
 			
-			Show show = ShowManagement.getShow(screen.getShowList(), showId);
+				if(	isValidForBooking  ) {
+					
+			int res1 =showManager.updateSeat(showId,seatsDetails,noOfSeatForThisShow,1);
 			
-			if( show != null ) {
+			if( res1 == 0 ) { System.out.println( "Ticket Booking Failed .." ); return; }
+		 
+		   int res = bookingTransactionManager.bookTicket(  theatreId,  dateForMovie,  screenId ,  showId,  noOfSeatForThisShow , userId, seatsDetails, ( totalRate*noOfSeatForThisShow ) );
 		
-		boolean result = ShowAndDateManagement.checkShowIsExistForDate( show, dateForMovie , hashmap );
-		
-		if( result )
-		{
-		
-		ShowAndDateManagement.updateSeatOfShowForThatDate(show, dateForMovie, hashmap, noOfSeatForThisShow, Status.Booked,seatsDetails );
+		   
 			
-		int totalRate = noOfSeatForThisShow * show.getRate();
-		
-		String currentDate = String.valueOf( LocalDate.now() ) ;
-		
-
-			
-		BookingTransaction bookingTransaction = new BookingTransaction( bookingTransactionId++, userId, theatre.getId(), showId , noOfSeatForThisShow ,totalRate, currentDate  , Status.Booked , dateForMovie , screen.getId(), seatsDetails  );
-		
-		this.bookingTransactionList.add(bookingTransaction);
-		
-		Movie movie = MovieManagement.getMovie(show.getMovieId());
-		
-		System.out.println("Your Ticket Booking was successfully completed... Enjoy the " + movie.getName() + " movie" );
-		
-		}
-		else {
-			
-			System.out.println("Show not Available for this Date " + dateForMovie );
-		}
-		
+			if(res != 0 ) {
+			System.out.println( "Ticket Booking Successfully.." );
 			}
 			else {
-				System.out.println("Show id not found");
+				System.out.println( "Ticket Booking Failed.. " );
 			}
-		}
-		else {
-			System.out.println("Screen not found");
-		}
-		
-		}
-		else {
-			System.out.println("Theatre not found..");
-		}
-		
-		
-		
-	}
-
-	//=================================================================================
-	
-	
-	
-	public void viewAllBookingTickets(  String date, int showId   ) {
-		
-	
-		int availSeatForThisShowInThisDate = ShowAndDateManagement.getAvailableSeat(date, hashmap, showId);
-		
-		SearchManagement.viewAllBookingTickets(bookingTransactionList, date , showId, availSeatForThisShowInThisDate,  theatreList);
-		
-	}
-
-
-	
-	public void viewAvailableSeatForParticularShowInParticularDate(String date, int showId) {
-		
-		int availSeatForThisShowInThisDate = ShowAndDateManagement.getAvailableSeat(date, hashmap, showId);
-		
-		System.out.println("AVAILABLE SEAT FOR "+ showId + " SHOW ID IS " + availSeatForThisShowInThisDate );
-		
-	}
-
-
-	
-	
-	public void historyViewForUser( int userId ) {
-		
-		System.out.println("\nHii " + userId + " Your Booking Details History is Here .. \n");
-		
-		SearchManagement.historyView(bookingTransactionList, userId, theatreList);
-		
-	}
-
-	
-	public void cancelTickets(int bookingTicketTransactionId) {
-		
-		
-		BookingTransaction	bookingTransaction = null;
-		
-		
-		for(int i=0; i< bookingTransactionList.size(); i++ )
-		{
-			BookingTransaction bookingTransaction1 = bookingTransactionList.get(i);
 			
-			if( bookingTransaction1.getId()  == bookingTicketTransactionId )
-			{
-				bookingTransaction = bookingTransaction1;
-				break;
-			}
-		}
-		
-		
-		if( bookingTransaction != null ) {
-			
-		String movieDate = bookingTransaction.getMovieDate();
-		
-		if( !movieDate.equals(  bookingTransaction.getBookingTimeAndDate()  ) ) {
-			
-
-			Theatre theatre = TheatreManagement.getTheatre(theatreList, bookingTransaction.getTheatreId() );
-						
-			if( theatre != null ) {
-			
-				ArrayList<Screen> screenList = theatre.getScreenList() ;
-				
-				Screen screen = ScreenManagement.getScreen(screenList, bookingTransaction.getScreenId() );
-	
-			
-				if( screen != null ) {
-			
-					ArrayList<Show> showList = screen.getShowList();
-					
-					Show show = showList.get(bookingTransaction.getShowId());
-			
-					if( show != null ) {
-			
-						bookingTransaction.setStatus(Status.Cancelled);
-						
-						ArrayList<String> seatss = bookingTransaction.getSeatsDetails();
-			
-						ShowAndDateManagement.updateSeatOfShowForThatDate(show, bookingTransaction.getMovieDate() , hashmap, bookingTransaction.getNoOfBookedSeat(), Status.Cancelled, seatss);
-			
-						System.out.println("Your Ticket was Cancelled Successfully...");
-			
-					}
-					else {
-						
-						System.out.println("show id not found");
-					}
-					
 				}
-			else {
-				System.out.println("Screen id not found");
-			}
-			
-			}
-			else {
-				System.out.println("Theatre id not found");
-			}
+				else {
+					System.out.println("Your Specify Tickets seats are Not Available For this show");
+				}
 		
+			
+	}
+
+	//=================================================================================
+	
+	
+
+	
+	public void cancelTickets(int bookingTicketTransactionId) throws SQLException {
+		
+		int showId = bookingTransactionManager.getShowIdByTransactionId(bookingTicketTransactionId);
+		ArrayList<String> seatsDetails = bookingTransactionManager.getSeatsDetailsByTransactionId(bookingTicketTransactionId)  ;
+		int noOfSeatForThisShow = bookingTransactionManager.getNoOfSeatForThisShowByTransactionId(bookingTicketTransactionId) ;
+		
+		int res1 =showManager.updateSeat(showId,seatsDetails,noOfSeatForThisShow,0);
+		
+		if( res1 == 0 ) { System.out.println( "Ticket Cancelling Failed For update seat failed.." ); return; }
+	 
+	   int res = bookingTransactionManager.cancelTickets( bookingTicketTransactionId  );
+	
+	   
+		
+		if(res != 0 ) {
+		System.out.println( "Ticket Cancelling Successfully.." );
 		}
 		else {
-			System.out.println("You cannot cancel your ticket .. ");
+			System.out.println( "Ticket Cancelling Failed.. Totally" );
 		}
+		
 		
 		}
 	
-		
-		}
+	//=====================================================================================================
 
+	
+	public void historyViewForUser( int userId ) throws SQLException {
+		
+		
+		ResultSet res = bookingTransactionManager.viewAllByUserId(userId);
+		
+		System.out.println("\n============================\n");
+		System.out.println("\n\t MY HISTORY \t");
+		
+		System.out.println("\n============================\n");
+		
+		int r = this.viewResultSetFromTransaction(res);
+		
+		if( r==0 ) { System.out.println("No History Available"); }
+		
+		System.out.println("\n============================\n");
+
+	}
+	
+	//=======================================================================================================
 
 
 	
-	public City getCity(int cityId) {
+	public void viewAllBookingTickets(int theatreId) throws SQLException  {
+	
+		ResultSet res = bookingTransactionManager.viewAllByTheatreId(theatreId);
 		
-		City city = SearchManagement.getCity(cityList, cityId);
 		
-		return city;
+		
+		System.out.println("\n============================\n");
+		System.out.println("\n\t VIEW bOOKING TICKETS FOR THIS THEATRE \t");
+		
+		System.out.println("\n============================\n");
+		
+		int r = this.viewResultSetFromTransaction(res);
+		
+		if( r==0 ) { System.out.println("No Ticked Are Booked Yet"); }
+		
+		System.out.println("\n============================\n");
 	}
 
 
+	//=======================================================================================================
 
 	
-	public void makeSubscriptionSeats(int showId, String date,  ArrayList<String> seatsDetails) {
+public int viewResultSetFromTransaction(ResultSet res) throws SQLException
+{
+	int c=0;
+	while( res.next() ) {
+		c++;
+		 String[]  st  ;
+			Array as = null;
+			as = res.getArray("seat_list");
+			
+		String[] seat_detail_new = ( String[] )as.getArray() ;
 		
-		//ShowAndDateManagement.makeSubscriptionSeats(hashmap,date,showId,  seatsDetails);
+		System.out.println( "Ticket Id : " + res.getInt("id") + "\nNo of Booked Seat : " + res.getInt("no_of_booked_seat") + "\nTotal Rate : " +  res.getInt("total_rate") + "\nShow Date : " + res.getDate("show_date") + "\nStatus : " +  ( ( res.getInt("status") == 1 ) ? "Booked" : "Cancelled" ) + "\nBook/Cancel Date : " + res.getDate("apply_date_and_time")  );
+		System.out.println("\nBooked Seat : ");
+		for(int i=0; i<seat_detail_new.length; i++) { System.out.print(seat_detail_new[i] + " "); } 
+		System.out.println("\n\n============================\n\n");
 		
 	}
 	
-	
-		
-	
+	return c;
+}
 
+//=================================================================================================================
+
+						// VALIDATION PURPOSE IT WILL DISPLAY DETAIL AND CHECK EXIST OR NOT	
+
+//=================================================================================================================
+
+
+public boolean getCity(int cityId) throws SQLException {
+	
+	return enumManager.isCityExist(cityId);
+	
+	
+	//return cityMap.containsKey(cityId) ;
+	
+}
+
+
+public void viewTheatreForOwner(int id) throws SQLException {
+	
+	theatreManager.getIdAndNameByOwnerId(id);
+	
+}
+
+
+
+public boolean isValidToAdd(int userId, int theatreId) throws SQLException {
+	
+	return theatreManager.getExistData(userId, theatreId);
+}
+
+
+
+public void viewScreenForOwner(int theatreId) throws SQLException {
+	
+	screenManager.getIdAndNameOfScreenByOwnerId(theatreId);
+}
+
+
+
+public boolean isValidToAddScreen(int screenId, int theatreId) throws SQLException {
+	
+	return screenManager.getExistData(screenId, theatreId);
+
+}
+
+
+public boolean isValidMovieId(int movieId) throws SQLException {
+
+	return movieManager.getExistData(movieId);
+}
+
+
+
+public boolean isValidForBookingId(int bookingTicketTransactionId, int userId) throws SQLException {
+	
+	return bookingTransactionManager.getExistData( bookingTicketTransactionId, userId );
+}
+
+
+
+//=================================================================================================================
+
+// VALIDATION PURPOSE IT WILL DISPLAY DETAIL AND CHECK EXIST OR NOT	
+
+//=================================================================================================================
+
+public void viewTheatreForUser() throws SQLException 
+{
+	theatreManager.getIdAndNameForUser();
+}
+
+
+public boolean isExistId(int theatreId) throws SQLException {
+	
+	return theatreManager.isExistId(theatreId);
+}
+
+
+public void displayScreenIdNameForThisTheatreId(int theatreId) throws SQLException {
+	
+	screenManager.getIdAndNameOfScreenByOwnerId(theatreId);
+	
+}
+
+
+
+public boolean isValidToScreen(int screenId, int theatreId) throws SQLException {
+
+	return screenManager.getExistData(screenId, theatreId);
+}
+
+
+public void displayShowIdAndNameForThisScreen(int screenId) throws SQLException {
+	
+	showManager.diplsayAllForThisScreen(screenId);
+}
+
+
+
+public boolean isValidToShow(int showId, int screenId) throws SQLException {
+	
+	return showManager.isExistId(showId, screenId);
+}
+
+//============================= EDIT AND DELETE TASKS ===========================
+
+
+public void editTheatre( String theatreName , int theatreId ) throws SQLException
+{
+	int res = theatreManager.edit(theatreName, theatreId);
+	
+	if ( res != 0 ) { System.out.println("Theatre Edited Successfully");  }  else { System.out.println("Theatre Edited Failed"); }
+}
+
+public void deleteTheatre(int  theatreId) throws SQLException
+{
+int res = theatreManager.delete( theatreId);
+	
+if ( res != 0 ) { System.out.println("Theatre Deleted Successfully");  }  else { System.out.println("Theatre Deleted Failed"); }
+}
+
+
+public void editScreen( String screenName , int screenId ) throws SQLException
+{
+	int res = screenManager.edit(screenName, screenId);
+	if ( res != 0 ) { System.out.println("Screen Edited Successfully");  }  else { System.out.println("Screen Edited Failed"); }
+	
+}
+
+
+//=================================== MAIN ADMIN TASK ============================
+
+
+public void addMovie(String moviename, int categorys, int languages, String filmCertifications, String duration)
+		throws SQLException {
+
+	int res = movieManager.add( moviename, categoryMap.get(categorys) ,  languageMap.get(languages) ,  filmCertifications,  duration);
+	
+	if ( res != 0 ) { System.out.println("Movie Added Successfully"); } else { System.out.println("Movie added Failed"); }
+	
+}
+
+public void editMovie(int movieId, int languageId,  String duration)
+		throws SQLException {
+
+	int res = movieManager.editMovie(movieId, languageMap.get(languageId), duration); 
+	
+	if ( res != 0 ) { System.out.println("Movie Edited Successfully"); } else { System.out.println("Movie Edited Failed"); }
+	
+}
+
+
+
+
+public void getReport() throws SQLException {
+	
+	int theatreCount = theatreManager.getCount();
+	
+	int screenCount = screenManager.getCount();
+	
+	int showCount = showManager.getCount();
+	
+	int movieCount = movieManager.getCount();
+	
+	
+	int cityCount = enumManager.getCount();
+	
+	int usercount = userManager.getCount();
+	
+	int theatreAdmin = theatreAdminManager.getCount();
+	
+	int bookingTransactionCount = bookingTransactionManager.getCount();
+	
+	System.out.println("\n============================\n");
+	System.out.println("\n TOTAL OVERALL REPORT \t");
+	
+	System.out.println("\n============================\n");
+	
+	System.out.println("\nTotal no of Theatre Count : " + theatreCount ); 
+	System.out.println("\nTotal no of Screen Count : " + screenCount ); 
+	System.out.println("\nTotal no of show Count : " + showCount ); 
+	System.out.println("\nTotal no of movie Count : " + movieCount ); 
+	System.out.println("\nTotal no of city Count : " + cityCount ); 
+	System.out.println("\nTotal no of Booking Transaction Count : " + bookingTransactionCount ); 
+	System.out.println("\nTotal no of User Count : " + usercount ); 
+	System.out.println("\nTotal no of Theatre Admin Count : " + theatreAdmin ); 
+	
+	
+	System.out.println("\n============================\n");
+}
 
 
 	//=================================================================================
 
+public void addCategoryEnum( String category ) throws SQLException {
+	
+
+	int res = movieManager.addCategoryEnum( category  ); 
+	
+	System.out.println("Category Edited Successfully");
+	
+}
+
+
+
+
+public void addLanguageEnum( String language ) throws SQLException {
+	
+
+	int res = movieManager.addLanguageEnum( language  ); 
+	
+	System.out.println("Language Edited Successfully"); 
+	
+}
+
+
+public void addCityEnum( String city, String district, long zipcode) throws SQLException {
+	
+	int res = enumManager.addCityEnum(city, district, zipcode);
+
+	if ( res != 0 ) { System.out.println("City added Successfully");  }  else { System.out.println("City added Failed"); }
 	
 	
+//	int res = enumManager.addCityEnum( city  , district , zipcode ); 
+//	
+//	System.out.println("City Edited Successfully"); 
 	
-	
+}
+
+
+
+
 }

@@ -1,51 +1,97 @@
+import java.util.Arrays;
+
+
+import java.util.InputMismatchException;
 import java.util.Scanner;
-
-
-import AccessService.CommonAccess;
+import AccessService.NormalAccess;
+import AccessService.UserAccessService;
+import AccessService.MainAdminAccess;
 import BookingManagement.BookingManagementSystem;
 import BookingManagement.Navigate;
-import DataModels.City;
 import DataModels.Roles;
 import DataModels.TheatreOwner;
 import DataModels.User;
-import UserInterface.DashBoards;
+import Helper.SecurityPassword;
+import Helper.ValidationManagement;
+import UiDashBoards.DashBoards;
+import UiDashBoards.MainAdminDashBoard;
+import UiDashBoards.UserDashBoard;
+
+import java.sql.Statement;
+import java.text.ParseException;
+import java.io.Console;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class Start {
 
 	
-	CommonAccess commonAccess =  new BookingManagementSystem();
+	
+	NormalAccess commonAccess =  new BookingManagementSystem();
+	
 	
 	Scanner ob = new Scanner(System.in);
 
-	
-	
 
-	public void register() {
-	
+	public void register() throws SQLException, NumberFormatException, ParseException {
 		
+		String username,email,password,dateOfBirth, documentProofId;
+		int choiceForUserType = -1;
+		long contact;
+		Roles user = null ;
+		int res=-1;
+		
+		while(true) {
 		System.out.println("Enter username : ");
-		String username = ob.next();
+		if( !ValidationManagement.validateInput( username = ob.next()) ) { System.out.println("Enter Valid name"); } else { break; } }
 		
+		while(true) {
 		System.out.println("Enter email : ");
-		String email = ob.next();
+		email = ob.next();
+		if( !ValidationManagement.validateEmail(email) ) {  System.out.println("Enter Valid email") ; }else { break; }
+		}
 		
+		while(true) {
 		System.out.println("Enter password : ");
-		String password = ob.next();
+		password = ob.next();
+		if( password.trim().length() == 0 ) { System.out.println("password cannot empty"); break; }
 		
-		System.out.println("Enter Date of birth : ");
-		String dateOfBirth = ob.next();
+		if( ValidationManagement.validatePassword(password) ) { break; } 
 		
+		user = commonAccess.isExistInAccount( email, password   );
+		
+		if(  user != null ) { System.out.println("Account Already Exist"); }else { break; }
+		
+		}
+		password = SecurityPassword.encryptPassword(password);
+	
+		while(true) {
+		System.out.println("Enter Date of birth : Format : (yyyy-mm-dd) ");
+		if( ValidationManagement.validateDate( dateOfBirth = ob.next() ) ) { break; } 
+		if( ValidationManagement.validateDateAfter(dateOfBirth) ) {  break; }
+		}
+		
+		while(true) {
 		System.out.println("Enter contact : ");
-		String contact = ob.next();
+		contact = ob.nextLong();
+		if( !ValidationManagement.validateContact(contact) ) { System.out.println("Enter Valid contact"); } else { break ; }  }
 		
-		System.out.println("Enter userType : \t1.User\t 2.ThatreOwner\n");
-		int choiceForUserType = ob.nextInt();
+		while(true) {
+		System.out.println("Enter userType : \t1.User\t 2.TheatreOwner\n");
+		try { choiceForUserType = ob.nextInt(); } catch(InputMismatchException e) { System.out.println("Enter Number only");  } 
+		
+	
+		if(  choiceForUserType != 1 && choiceForUserType != 2 ) { System.out.println("Pls Enter 1 or 2 only");  } else { break; } }
 		
 
+		
 		
 		if( choiceForUserType == 1  )
 		{
-			commonAccess.addToUser(username, email, password, contact, dateOfBirth);
+			res = commonAccess.addToUser(username, email, password, contact, dateOfBirth, choiceForUserType);
 			
 		}
 		else {
@@ -53,54 +99,60 @@ public class Start {
 
 			
 			System.out.println("Enter Document Proof Id : ");
-			String documentProofId = ob.next();
+			documentProofId = ob.next();
 			
-			commonAccess.viewCity();
-			
-			System.out.println("Enter City Id : ");
-			int cityId = ob.nextInt();
-			
-			City city = commonAccess.getCity(cityId);
-			
-			if( city!=null ) {
-			
-			commonAccess.addToTheatreOwner(username, email, password, contact, documentProofId, dateOfBirth, cityId);
-	
-			}
-			else {
-				System.out.println("City not found");
-			}
-			
+
+			res = commonAccess.addToTheatreOwner(username, email, password, contact, documentProofId, dateOfBirth, choiceForUserType);
+
 		}
 		
+		if( res > 0 ) {
+	
 		System.out.println("Register Successfully..");
 		
+		} else {
+			System.out.println("Register Failed Try Again..");
+		}
 		
+		}
 		
-	}
+
+	
 	
 	
 	//==============================================================================================
 	
+
 	
-	public void login() {
+	public void login() throws Exception {
 		
-		DashBoards dashBoards=null;
+		DashBoards dashBoards = null;
 		
 		Roles user = null;
 		
+		String email, password;
+		
 		System.out.println("Enter email : ");
-		String email = ob.next();
+		email = ob.next();
 		
 		System.out.println("Enter password : ");
-		String password = ob.next();
-		
-		
-		user = commonAccess.isExistInAccount(email,password); //bookingManagementSystem.login(email,password);
+		password = ob.next();
+
+		 password  = password.equals("admin") ? password : SecurityPassword.encryptPassword(password);
+
+		user = commonAccess.isExistInAccount(email, password   );
 	
+		if( user == null  && !( email.equals("admin@gmail.com") && password.equals("admin") ) )
+
+		{
 		
-		dashBoards = Navigate.navigation( (BookingManagementSystem) commonAccess , user );
+			System.out.println("Account not found");
+			return;
+
+		}
 		
+		dashBoards = Navigate.navigation( (BookingManagementSystem) commonAccess , user  );
+		if( email.equals("admin@gmail.com") && password.equals("admin") ) { dashBoards =  Navigate.navigation( (BookingManagementSystem) commonAccess ); }; 
 		if( dashBoards != null )
 		{
 			while(true) {
@@ -116,13 +168,7 @@ public class Start {
 		}
 	
 		
-		if( user == null )
-
-		{
-			
-			System.out.println("Account not found");
-
-		}
+		
 	}
 
 	
@@ -130,20 +176,26 @@ public class Start {
 	
 	
 	
-	public static void main(String[] args)
+	public static void main(String[] args) throws Exception
 	{
 		
-		
+	
 		Start start  = new Start();
 		
 		Scanner ob = new Scanner(System.in);
 		
+     	int choice;
+     	System.out.println("\n=========================================\n");
+		System.out.println("\nWelcome To Movie Ticket Booking Application\n");
+		System.out.println("\n=========================================\n");
 		
-		while(true) {
 		
-		System.out.println("\nEnter choice : \n1.Login\n2.Register\n");
 		
-		int choice = ob.nextInt();
+		do  {
+		
+		System.out.println("\nEnter choice : \n1.Login\n2.Register\n3.Exit\n");
+		
+		try { choice = ob.nextInt(); } catch(InputMismatchException e) { System.out.println("Enter Number only"); return; }
 		
 		switch(choice)
 		{
@@ -157,11 +209,22 @@ public class Start {
 			start.register();
 			
 			break;
+		
+		case 3 :
 			
+			System.out.println("! -- Code Exit -- !");
+			System.exit(0);
+		default :
+			System.out.println("! -- Enter 1 or 2 only -- !");
+		continue;
 		
 		}
 		
-		}
+		} while(true);
+		
+		
+		
+		
 		
 	}
 	

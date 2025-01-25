@@ -1,23 +1,35 @@
 package AccessService;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 
-public interface UserAccessService {
+public interface UserAccessService extends CommonAccess {
 	
-	public void viewAllMovieInTheatre(int theatreId);
+	 void viewAllMovieInTheatre(int theatreId) throws SQLException;
 	
-	public void viewAllTheatreForMovie(int movieId);
+	 void viewAllTheatreForMovie(int movieId) throws SQLException;
 	
-	public void viewAllTheatreForCity(int cityId);
+	 void viewAllTheatreForCity(int cityId) throws SQLException;
 
-	public void bookTicket(int theatreId, String dateForMovie,int screenId, int showId , int noOfSeatForThisShow ,int userId, ArrayList<String> seatsDetails );
+	 void bookTicket(int theatreId, String dateForMovie,int screenId, int showId , int noOfSeatForThisShow ,int userId, ArrayList<String> seatsDetails ) throws SQLException;
 
-	public void viewAvailableSeatForParticularShowInParticularDate(String date, int showId);
+	 void historyViewForUser(int userId) throws SQLException;
+	
+	 void cancelTickets( int bookingTicketTransactionId ) throws SQLException;
 
-	public void historyViewForUser(int userId);
-	
-	public void cancelTickets( int bookingTicketTransactionId );
-	
+	 boolean isValidForBookingId(int bookingTicketTransactionId, int userId) throws SQLException;
+
+	 void viewTheatreForUser() throws SQLException;
+
+	 boolean isExistId(int theatreId) throws SQLException;
+
+	 void displayScreenIdNameForThisTheatreId(int theatreId) throws SQLException;
+
+	 boolean isValidToScreen(int screenId, int theatreId) throws SQLException;
+
+	 void displayShowIdAndNameForThisScreen( int screenId ) throws SQLException;
+
+	 boolean isValidToShow(int showId, int screenId)throws SQLException;
 
 
 }

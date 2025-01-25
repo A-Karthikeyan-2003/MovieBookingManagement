@@ -1,18 +1,16 @@
 package AccessService;
 
-import DataModels.City;
-import DataModels.Roles;
+import java.sql.SQLException;
 
-public interface CommonAccess {
+public interface CommonAccess  {
 
-	public void addToTheatreOwner(String username,String  email,String password, String contact,String documentProofId, String dateOfBirth ,int cityId );
+
+	 void viewMovies() throws SQLException;
 	
-	public void addToUser( String username, String email, String password, String contact, String dateOfBirth );
+	 void viewCity() throws SQLException;
 	
-	public void viewCity();
+	 boolean getCity(int cityId) throws SQLException;
 	
-	public City getCity(int cityId);
-	
-	public Roles isExistInAccount(String email, String password);
+	 boolean isValidMovieId(int movieId) throws SQLException;
 	
 }

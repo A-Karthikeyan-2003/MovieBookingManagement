@@ -4,34 +4,23 @@ public class TheatreOwner implements Roles {
 	
 	private String name, email, password, contact, documentProofId, dateOfBirth   ;
 	
-	private int cityId;
+	
 	
 	private int  id, age;
 
-	public TheatreOwner(String name, String email, String password, String contact, String documentProofId, int id,
-			String dateOfBirth, int cityId) {
-	
+	public TheatreOwner( int id, String name, String email, String password, String contact,String dateOfBirth, String documentProofId 
+			) {
+		
+		this.id = id;
 		this.name = name;
 		this.email = email;
 		this.password = password;
 		this.contact = contact;
-		this.documentProofId = documentProofId;
-		this.id = id;
 		this.dateOfBirth = dateOfBirth;
+		this.documentProofId = documentProofId;
 		
-		this.cityId = cityId;
-		
 	}
 
-
-	public int getCityId() {
-		return cityId;
-	}
-
-
-	public void setCityId(int cityId) {
-		this.cityId = cityId;
-	}
 
 
 	public String getName() {

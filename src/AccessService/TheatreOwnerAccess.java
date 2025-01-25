@@ -1,27 +1,33 @@
 package AccessService;
 
+import java.sql.SQLException;
+
 import java.util.ArrayList;
 
-import DataModels.City;
 
-public interface TheatreOwnerAccess {
-	
-	public void addTheatre( String theatreName,int cityId, String owner  );
-	
-	public void addScreens(int theatreId, String screenName   );
-	
-	public void addShows( int theatreId,int screenId,String showName,String timeStart ,int movieId, String datesForShow , int noOfSeats , int rate  );
-	
-	public void releaseMovies(int theatreId, int screenId, int showId, int movieId , String datesForShow,int rate, int seat );
 
-	public void viewMovies();
+public interface TheatreOwnerAccess extends CommonAccess {
 	
-	public void viewCity();
+	 void addTheatre( String theatreName,int cityId, int ownerId  ) throws SQLException;
 	
-	public City getCity(int cityId);
+	 void addScreens(int theatreId, String screenName ,  int row, int col   ) throws SQLException;
 	
-	public void viewAllBookingTickets( String Date, int showId );
+	 void addShows( int theatreId,int screenId,String showName,String timeStart ,int movieId, String datesForShow , int rate  ) throws SQLException;
 
-	public void makeSubscriptionSeats(int showId, String date, ArrayList<String> seatsDetails);
+	 void viewAllBookingTickets( int theatreId ) throws SQLException;
+
+	 void viewTheatreForOwner(int id) throws SQLException;
+
+	 boolean isValidToAdd(int userId, int theatreId) throws SQLException;
+
+	 void viewScreenForOwner(int theatreId) throws SQLException;
+
+	 boolean isValidToAddScreen(int screenId, int theatreId) throws SQLException;
 	
+	 void deleteTheatre(int  theatreId) throws SQLException;
+	
+	 void editTheatre( String theatreName , int theatreId ) throws SQLException;
+	
+	 void editScreen( String screenName , int screenId ) throws SQLException;
+
 }
